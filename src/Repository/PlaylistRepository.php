@@ -76,14 +76,12 @@ class PlaylistRepository extends ServiceEntityRepository
      * ou tous les enregistrements si la valeur est vide
      * @param type $champ
      * @param type $valeur
-     * @param type $table si $champ dans une autre table
      * @return Playlist[]
      */
-    public function findByContainValue($champ, $valeur, $table=""): array{
+    public function findByContainValue($champ, $valeur): array{
         if($valeur==""){
             return $this->findAllOrderBy(NAME, 'ASC');
-        }    
-        if($table==""){      
+        }else{      
             return $this->createQueryBuilder(PLAYLIST_ALIAS)
                     ->select(PLAYLIST_ALIAS.".".ID." ".ID)
                     ->addSelect(PLAYLIST_ALIAS.".".NAME." ".NAME)
@@ -98,6 +96,20 @@ class PlaylistRepository extends ServiceEntityRepository
                     ->addOrderBy(CATEGORIE_ALIAS.".".NAME)
                     ->getQuery()
                     ->getResult();              
+        }           
+    }    
+
+    /**
+     * Enregistrements dont un champ contient une valeur
+     * ou tous les enregistrements si la valeur est vide
+     * @param type $champ
+     * @param type $valeur
+     * @param type $table si $champ dans une autre table
+     * @return Playlist[]
+     */
+    public function findByContainValueTable($champ, $valeur, $table): array{
+        if($valeur==""){
+            return $this->findAllOrderBy(NAME, 'ASC');              
         }else{   
             return $this->createQueryBuilder(PLAYLIST_ALIAS)
                     ->select(PLAYLIST_ALIAS.".".ID." ".ID)
@@ -115,8 +127,6 @@ class PlaylistRepository extends ServiceEntityRepository
                     ->getResult();              
             
         }           
-    }    
-
-
+    } 
     
 }
