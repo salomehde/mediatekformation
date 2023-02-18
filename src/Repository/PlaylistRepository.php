@@ -16,6 +16,7 @@ const CATEGORIE = "categorie";
 const CATEGORIES = "categories";
 const CATEGORIE_ALIAS = "c";
 const FORMATION_ALIAS = "f";
+const TITLE = "title";
 
 /**
  * @extends ServiceEntityRepository<Playlist>
@@ -51,22 +52,29 @@ class PlaylistRepository extends ServiceEntityRepository
     }
     
     /**
-     * Retourne toutes les playlists triées sur un champ
-     * @param type $champ
+     * Retourne toutes les playlists triées sur le nom de la playlist
      * @param type $ordre
      * @return Playlist[]
      */
-    public function findAllOrderBy($champ, $ordre): array{
+    public function findAllOrderByName($ordre): array{
         return $this->createQueryBuilder(PLAYLIST_ALIAS)
-                ->select(PLAYLIST_ALIAS.".".ID." ".ID)
-                ->addSelect(PLAYLIST_ALIAS.".".NAME." ".NAME)
-                ->addSelect(CATEGORIE_ALIAS.".".NAME." ".CATEGORIE.NAME)
                 ->leftjoin(PLAYLIST_ALIAS.".".FORMATIONS, FORMATION_ALIAS)
-                ->leftjoin(FORMATION_ALIAS.".".CATEGORIES, CATEGORIE_ALIAS)
                 ->groupBy(PLAYLIST_ALIAS.".".ID)
-                ->addGroupBy(CATEGORIE_ALIAS.".".NAME)
-                ->orderBy(PLAYLIST_ALIAS.".".$champ, $ordre)
-                ->addOrderBy(CATEGORIE_ALIAS.".".NAME)
+                ->orderBy(PLAYLIST_ALIAS.".".NAME, $ordre)
+                ->getQuery()
+                ->getResult();       
+    }
+    
+    /**
+     * Retourne toutes les playlists triées sur le nombre de formations
+     * @param type $ordre
+     * @return Playlist[]
+     */
+    public function findAllOrderByNbFormations($ordre): array{
+        return $this->createQueryBuilder(PLAYLIST_ALIAS)
+                ->leftjoin(PLAYLIST_ALIAS.".".FORMATIONS, FORMATION_ALIAS)
+                ->groupBy(PLAYLIST_ALIAS.".".ID)
+                ->orderBy('count('.FORMATION_ALIAS.".".TITLE.')', $ordre)
                 ->getQuery()
                 ->getResult();       
     }
@@ -80,20 +88,14 @@ class PlaylistRepository extends ServiceEntityRepository
      */
     public function findByContainValue($champ, $valeur): array{
         if($valeur==""){
-            return $this->findAllOrderBy(NAME, 'ASC');
+            return $this->findAllOrderByName('ASC');
         }else{      
             return $this->createQueryBuilder(PLAYLIST_ALIAS)
-                    ->select(PLAYLIST_ALIAS.".".ID." ".ID)
-                    ->addSelect(PLAYLIST_ALIAS.".".NAME." ".NAME)
-                    ->addSelect(CATEGORIE_ALIAS.".".NAME." ".CATEGORIE.NAME)
                     ->leftjoin(PLAYLIST_ALIAS.".".FORMATIONS, FORMATION_ALIAS)
-                    ->leftjoin(FORMATION_ALIAS.".".CATEGORIES, CATEGORIE_ALIAS)
                     ->where(PLAYLIST_ALIAS.".".$champ.' LIKE :valeur')
                     ->setParameter('valeur', '%'.$valeur.'%')
                     ->groupBy(PLAYLIST_ALIAS.".".ID)
-                    ->addGroupBy(CATEGORIE_ALIAS.".".NAME)
                     ->orderBy(PLAYLIST_ALIAS.".".NAME, 'ASC')
-                    ->addOrderBy(CATEGORIE_ALIAS.".".NAME)
                     ->getQuery()
                     ->getResult();              
         }           
@@ -104,25 +106,19 @@ class PlaylistRepository extends ServiceEntityRepository
      * ou tous les enregistrements si la valeur est vide
      * @param type $champ
      * @param type $valeur
-     * @param type $table si $champ dans une autre table
      * @return Playlist[]
      */
-    public function findByContainValueTable($champ, $valeur, $table): array{
+    public function findByContainValueCategorie($champ, $valeur): array{
         if($valeur==""){
-            return $this->findAllOrderBy(NAME, 'ASC');              
+            return $this->findAllOrderByName('ASC');              
         }else{   
             return $this->createQueryBuilder(PLAYLIST_ALIAS)
-                    ->select(PLAYLIST_ALIAS.".".ID." ".ID)
-                    ->addSelect(PLAYLIST_ALIAS.".".NAME." ".NAME)
-                    ->addSelect(CATEGORIE_ALIAS.".".NAME." ".CATEGORIE.NAME)
                     ->leftjoin(PLAYLIST_ALIAS.".".FORMATIONS, FORMATION_ALIAS)
                     ->leftjoin(FORMATION_ALIAS.".".CATEGORIES, CATEGORIE_ALIAS)
                     ->where(CATEGORIE_ALIAS.".".$champ.' LIKE :valeur')
                     ->setParameter('valeur', '%'.$valeur.'%')
                     ->groupBy(PLAYLIST_ALIAS.".".ID)
-                    ->addGroupBy(CATEGORIE_ALIAS.".".NAME)
                     ->orderBy(PLAYLIST_ALIAS.".".NAME, 'ASC')
-                    ->addOrderBy(CATEGORIE_ALIAS.".".NAME)
                     ->getQuery()
                     ->getResult();              
             

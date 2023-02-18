@@ -50,7 +50,7 @@ class PlaylistsController extends AbstractController {
      * @return Response
      */
     public function index(): Response{
-        $playlists = $this->playlistRepository->findAllOrderBy('name', 'ASC');
+        $playlists = $this->playlistRepository->findAllOrderByName('ASC');
         $categories = $this->categorieRepository->findAll();
         return $this->render(PAGES_PLAYLIST, [
             'playlists' => $playlists,
@@ -65,7 +65,14 @@ class PlaylistsController extends AbstractController {
      * @return Response
      */
     public function sort($champ, $ordre): Response{
-        $playlists = $this->playlistRepository->findAllOrderBy($champ, $ordre);
+        switch($champ){
+            case "name":
+                $playlists = $this->playlistRepository->findAllOrderByName($ordre);
+                break;
+            case "nbformations":
+                $playlists = $this->playlistRepository->findAllOrderByNbFormations($ordre);
+                break;
+        }
         $categories = $this->categorieRepository->findAll();
         return $this->render(PAGES_PLAYLIST, [
             'playlists' => $playlists,
@@ -85,7 +92,7 @@ class PlaylistsController extends AbstractController {
         if($table==""){
            $playlists = $this->playlistRepository->findByContainValue($champ, $valeur); 
         }else{
-            $playlists = $this->playlistRepository->findByContainValueTable($champ, $valeur, $table);
+            $playlists = $this->playlistRepository->findByContainValueCategorie($champ, $valeur);
         }
         $categories = $this->categorieRepository->findAll();
         return $this->render(PAGES_PLAYLIST, [
@@ -105,7 +112,7 @@ class PlaylistsController extends AbstractController {
         $playlist = $this->playlistRepository->find($id);
         $playlistCategories = $this->categorieRepository->findAllForOnePlaylist($id);
         $playlistFormations = $this->formationRepository->findAllForOnePlaylist($id);
-        return $this->render(PAGES_PLAYLIST, [
+        return $this->render("pages/playlist.html.twig", [
             'playlist' => $playlist,
             'playlistcategories' => $playlistCategories,
             'playlistformations' => $playlistFormations
