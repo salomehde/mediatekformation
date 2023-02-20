@@ -77,4 +77,15 @@ class Categorie
 
         return $this;
     }
+    
+    /**
+ * (Add this method into your class)
+ *
+ * @return string String representation of this class
+ */
+public function __toString()
+{
+    return $this->name;
+}
+    
 }
